@@ -28,6 +28,9 @@ device reading the image from an SD card. Nothing outside the image's scope is
 touched, and nothing inside it is left as it was, apart from the user's own
 data when a firmware is upgraded and the user chooses to keep it.
 
+An image is a 4 KiB header followed by the flash sectors it writes, exactly as
+they are stored in flash. Blank sectors are left out.
+
 ## Files
 
 - [SPEC.md](SPEC.md): the format and what a writer must do.

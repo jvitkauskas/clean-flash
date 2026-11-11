@@ -105,21 +105,34 @@ writes and verifies it, with `0x4000` erased first and written last. It never
 holds the image in RAM, and never writes the boot area or, on the SMK-37,
 `0xC0000`–`0xC1FFF`.
 
-## Compression
+## Why images aren't compressed or decrypted
 
-Melodee 1.6.1's app area, 586 KB used, with Upkr 0.2.3 `-9 -p 2`:
+An earlier draft stored the app area decrypted and packed each sector with
+Upkr. Measured on Melodee 1.6.1's app area (586 KB used), Upkr 0.2.3 `-9 -p 2`:
 
 | Stored as | Size |
 |---|---:|
 | encrypted, as in the `.fwsc` | 567 KB (97%) |
 | decrypted, one stream per 4 KiB sector, call filter | 418 KB (71%) |
 | decrypted, 64 KiB streams, call filter | 398 KB (68%) |
-| decrypted, one stream, no call filter | 395 KB (67%) |
 | decrypted, one stream, call filter | 389 KB (66%) |
 
-xz at its strongest: 384 KB decrypted, 557 KB encrypted. Decrypting matters
-most; one stream per sector costs about 7% against one stream for everything,
-and gives random access, a check per sector and a 4 KiB buffer on the device.
-Upkr's decoder is about 100 lines of C with 641 bytes of scratch, already in
-m-bootloader. Packing at `-9` is slow for large streams and quick for 4 KiB
-ones.
+Encrypted code doesn't compress, so compression only pays with decryption,
+and together they need a decoder in every writer (JavaScript, Rust, C), a call
+filter, and encryption with the unit's key while writing. What they save is
+about a third of the code, a few hundred KB of download. It doesn't help the
+web route at all: m-bootloader's MIDI mode takes raw bytes, so the page would
+unpack everything before sending it. So images hold sectors as stored, and
+leave out blank ones instead:
+
+| Firmware | Sectors stored (FM-1 firmware scope: 1012 KiB) |
+|---|---:|
+| M-VAVE FM-1 015 | 572 KiB, plus 72 KiB of stock sounds |
+| M-VAVE FM-1 016 | 660 KiB |
+| ChoralRoot 0.38 | 616 KiB |
+| Melodee 1.6.1, with its resources | 628 KiB |
+| LOOM-8 0.14, with its resources | 660 KiB |
+| Optimist 0.3 synths | 648 KiB |
+| Optimist 0.3 mots-config (SD card build) | 808 KiB |
+
+A bootloader image is 20 KiB: the header and four sectors.
