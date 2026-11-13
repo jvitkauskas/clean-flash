@@ -24,12 +24,45 @@ record) are the same in all 68 images and all packages. So a bootloader can
 ship a fixed boot area, as M-VAVE's packages do. The one check worth keeping is
 that the chip-key record matches the chip.
 
-## Both FM-1 flash chips take the same images
+## Firmwares accept only the flash chips they know
 
-FM-1s sold from late 2026 have a UCUN UC25HQ80 flash (JEDEC ID `0xB36014`)
-instead of the Puya P25Q80H (`0x856014`). Owners report backups, restores and
-m-bootloader working on it, so an image doesn't need to name the flash chips it
-suits.
+FM-1s sold from late 2026 carry a UCUN UC25HQ80 (JEDEC ID `0xB36014`) instead
+of the Puya P25Q80H (`0x856014`): the same size, sectors and commands, another
+maker. Bootloaders don't mind: JieLi's flash driver and m-bootloader have no
+list of parts and take the size from the ID's last byte (`0x14`, 1 MiB), and
+owners report M-Flasher backups and restores and m-bootloader working on it.
+
+Most open-source firmwares do mind. Felucca 0.8 (3 October 2026) drove the
+flash with its own driver, switching memory-mapped reads off and sending plain
+NOR commands, and started with
+`flash_ok = fl_jedec_ram() == 0x856014u; /* the expected 1 MiB part, else stay RAM-only */`.
+No document says why; the driver was written for and tested on that one part,
+an ID of `0` or `0xFFFFFF` also shows that switching to direct access failed,
+and the firmware erases the flash it runs from. Its flash code was copied by
+SLOOP and the firmwares built on it (Optimist, zp12, Dinghy), Melodee,
+ChoralRoot, fm1-base and its firmwares, Hortator, genkigenki's and others.
+
+On a part not in the list, such a firmware runs without its storage: no
+saves, no projects, no unit ID. **It also refuses its own updates**:
+ChoralRoot runs its update session only `if (flash_ok)`, fm1-base never starts
+its update loader, SLOOP's and Optimist's loaders refuse on purpose ("SLOOP
+would run without its storage and could not be updated again"). Once
+installed, only the chip's ROM download mode replaces it.
+
+Reported from 2 November 2026 (ChoralRoot, SLOOP 2.8.5). Every fix added the
+new ID to the list; none dropped the check or accepted any 1 MiB part:
+
+| Accepts `0xB36014` since | Firmwares |
+|---|---|
+| 2 November | Melodee, ChoralRoot 0.29.1 |
+| 3 November | SLOOP 2.8.5, Dinghy, Skiff 2.2, Hortator |
+| 4 November | Felucca, fm1-base |
+| 5 November | fm1-x0x, fm1-fomni, fm1-amb, LOOM-8 |
+| 8–13 November | fmini-1, fm1-fimba, erik37 1.3 |
+| not yet (13 November) | Optimist, fm1-dub, zp12; the FM-1 builds of Makkuro37, Speak37, Vector37, sloop-pro |
+
+So an image says which parts its firmware accepts, and a writer checks the
+unit's before writing anything. The SMK-37s seen carry `0xEB6014`.
 
 ## The FM-1's flash holds nothing unit-specific
 

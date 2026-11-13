@@ -77,7 +77,7 @@ All integers are little endian. Every reserved byte is 0.
 | 80 | 16 | Version, UTF-8, padded with zeros, for example `1.6.1` |
 | 96 | 32 | Stored map |
 | 128 | 32 | User map |
-| 160 | 32 | Reserved |
+| 160 | 32 | Flash chips: the JEDEC IDs the firmware accepts, up to eight, 4 bytes each; unused ones 0 |
 | 192 | 2 | Number of predecessors, 0 to 32 |
 | 194 | 2 | Reserved |
 | 196 | 384 | Predecessors: 32 entries of 12 bytes; unused ones 0 |
@@ -98,6 +98,14 @@ CRC-32 is the IEEE polynomial as in zlib (reflected, initial and final value
   projects, presets, samples, pairings). The image holds its default content
   for those sectors, or leaves them erased. Bits MAY be set only in the
   firmware scope.
+
+**Flash chips:** the flash parts the image's firmware works on, by JEDEC ID
+(command `9F`, as `0x856014`). Firmwares that drive the flash themselves
+accept only the parts they know, and on any other part they run without
+saving anything and refuse their own updates, so installing one there leaves a
+unit that only the chip's ROM download mode can recover (docs/findings.md).
+Scopes 1 and 3 MUST list at least one ID. Scope 2 MUST list none: bootloaders
+take the flash's size from the ID and work on every part seen.
 
 **Predecessor entry:** an earlier build this image upgrades, found by a
 fingerprint of its code:
@@ -131,11 +139,15 @@ written if any fails:
 2. The file size, and the CRC-32 of the stored sectors. A host also checks the
    SHA-256.
 3. No stored-map bit outside the scope, no user-map bit outside the firmware
-   scope, at most 32 predecessors.
-4. Scopes 1 and 3: sector `0x4000` is stored, and its first 32 bytes decrypt
+   scope, at most 32 predecessors, flash chips as section 3.1 says for the
+   scope.
+4. Scopes 1 and 3: the unit's JEDEC ID is one of the flash chips. M-Flasher
+   reads it in download mode, a web page from m-bootloader's MIDI mode, a
+   program on the device from the flash itself.
+5. Scopes 1 and 3: sector `0x4000` is stored, and its first 32 bytes decrypt
    with the unit's chip key to a valid record (their CRC-16 over bytes 2–31
    equals bytes 0–1), as m-bootloader's MIDI mode checks a package.
-5. Scopes 2 and 3: the boot area is a bootloader the writer recognises for this
+6. Scopes 2 and 3: the boot area is a bootloader the writer recognises for this
    board, and its chip-key record decodes to the unit's chip key.
 
 A writer that can't hold the image in memory checks the CRC-32 in a first pass
@@ -188,6 +200,10 @@ Before a clean install:
 - On an SMK-37: the stock firmware's key, knob and fader mapping goes back to
   its factory values.
 
+When the unit's flash chip isn't listed: the firmware doesn't support this
+unit's flash. It would run without saving anything and couldn't be updated
+again except from the chip's download mode. Nothing is written.
+
 Before writing the boot area: a power cut while it is written leaves only the
 chip's ROM download mode, which on an FM-1 can need extra hardware.
 
@@ -198,6 +214,11 @@ chip's ROM download mode, which on an FM-1 can need extra hardware.
 - The sectors are the build's `flash.bin` as it is, encrypted for chip key
   `0x980F`, plus whatever else the firmware keeps outside the app (resources,
   default data).
+- List the flash chips the firmware's own flash code accepts. Today's FM-1s
+  carry the Puya P25Q80H (`0x856014`) or, from late 2026, the UCUN UC25HQ80
+  (`0xB36014`); the SMK-37 seen carries `0xEB6014`. M-VAVE's stock firmware
+  uses JieLi's driver, which has no list of parts: list the parts it has run
+  on.
 - Don't include the JieLi SDK's radio records (VM ids 106, 107, 108, 187).
   Firmware writes them on its first start.
 - An image of M-VAVE's stock firmware needs the stock sounds (USR: FM-1
