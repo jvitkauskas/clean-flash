@@ -77,7 +77,7 @@ All integers are little endian. Every reserved byte is 0.
 | 80 | 16 | Version, UTF-8, padded with zeros, for example `1.6.1` |
 | 96 | 32 | Stored map |
 | 128 | 32 | User map |
-| 160 | 32 | Flash chips: up to eight JEDEC IDs, 4 bytes each; unused ones 0. All 0: any chip |
+| 160 | 32 | Reserved |
 | 192 | 2 | Number of predecessors, 0 to 32 |
 | 194 | 2 | Reserved |
 | 196 | 384 | Predecessors: 32 entries of 12 bytes; unused ones 0 |
@@ -132,11 +132,10 @@ written if any fails:
    SHA-256.
 3. No stored-map bit outside the scope, no user-map bit outside the firmware
    scope, at most 32 predecessors.
-4. The flash chips, if any are listed: the unit's JEDEC ID is one of them.
-5. Scopes 1 and 3: sector `0x4000` is stored, and its first 32 bytes decrypt
+4. Scopes 1 and 3: sector `0x4000` is stored, and its first 32 bytes decrypt
    with the unit's chip key to a valid record (their CRC-16 over bytes 2–31
    equals bytes 0–1), as m-bootloader's MIDI mode checks a package.
-6. Scopes 2 and 3: the boot area is a bootloader the writer recognises for this
+5. Scopes 2 and 3: the boot area is a bootloader the writer recognises for this
    board, and its chip-key record decodes to the unit's chip key.
 
 A writer that can't hold the image in memory checks the CRC-32 in a first pass
@@ -222,8 +221,6 @@ using ordinary tools.
 
 ## 7. Open questions
 
-- FM-1s with the new flash chip (`0xB36014`): whether the boot configuration
-  of today's bootloaders suits them.
 - A unit with a chip key other than `0x980F`, if one ever turns up: its images
   would need their own builds, as `.fwsc` packages would.
 - SMK-37 wheel values in the stock presets header (`0xC2060`, `0xC2080`): most

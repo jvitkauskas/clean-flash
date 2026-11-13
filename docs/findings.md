@@ -24,6 +24,13 @@ record) are the same in all 68 images and all packages. So a bootloader can
 ship a fixed boot area, as M-VAVE's packages do. The one check worth keeping is
 that the chip-key record matches the chip.
 
+## Both FM-1 flash chips take the same images
+
+FM-1s sold from late 2026 have a UCUN UC25HQ80 flash (JEDEC ID `0xB36014`)
+instead of the Puya P25Q80H (`0x856014`). Owners report backups, restores and
+m-bootloader working on it, so an image doesn't need to name the flash chips it
+suits.
+
 ## The FM-1's flash holds nothing unit-specific
 
 The FM-1's key area (`0xFF000`) is blank in the packages and on the units seen.
