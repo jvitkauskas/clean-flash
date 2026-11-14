@@ -80,7 +80,7 @@ All integers are little endian. Every reserved byte is 0.
 | 80 | 16 | Version, UTF-8, padded with zeros, for example `1.6.1` |
 | 96 | 32 | Stored map |
 | 128 | 32 | User map |
-| 160 | 32 | Flash chips: the JEDEC IDs the firmware accepts, up to eight, 4 bytes each; unused ones 0 |
+| 160 | 32 | Flash chips: the only JEDEC IDs the firmware accepts, up to eight, 4 bytes each; unused ones 0. All 0: any |
 | 192 | 2 | Number of predecessors, 0 to 32 |
 | 194 | 2 | Reserved |
 | 196 | 384 | Predecessors: 32 entries of 12 bytes; unused ones 0 |
@@ -102,13 +102,14 @@ CRC-32 is the IEEE polynomial as in zlib (reflected, initial and final value
   for those sectors, or leaves them erased. Bits MAY be set only in the
   firmware scope.
 
-**Flash chips:** the flash parts the image's firmware works on, by JEDEC ID
-(command `9F`, as `0x856014`). Firmwares that drive the flash themselves
-accept only the parts they know, and on any other part they run without
-saving anything and refuse their own updates, so installing one there leaves a
-unit that only the chip's ROM download mode can recover (docs/findings.md).
-Scopes 1 and 3 MUST list at least one ID. Scope 2 MUST list none: bootloaders
-take the flash's size from the ID and work on every part seen.
+**Flash chips:** for a firmware that works only on some flash parts, those
+parts, by JEDEC ID (command `9F`, as `0x856014`). Many firmwares accept only
+the parts they know, and on any other part they run without saving anything
+and refuse their own updates, so installing one there leaves a unit that only
+the chip's ROM download mode can recover (docs/findings.md). A packager MUST
+list the parts such a firmware accepts, and leaves the field all 0 for a
+firmware that doesn't check. Scope 2 lists none: bootloaders take the flash's
+size from the ID and work on every part seen.
 
 **Predecessor entry:** an earlier build this image upgrades, found by a
 fingerprint of its code:
@@ -142,9 +143,9 @@ written if any fails:
 2. The file size, and the CRC-32 of the stored sectors. A host also checks the
    SHA-256.
 3. No stored-map bit outside the scope, no user-map bit outside the firmware
-   scope, at most 32 predecessors, flash chips as section 3.1 says for the
-   scope.
-4. Scopes 1 and 3: the unit's JEDEC ID is one of the flash chips. M-Flasher
+   scope, at most 32 predecessors, no flash chips in scope 2.
+4. Scopes 1 and 3, if flash chips are listed: the unit's JEDEC ID is one of
+   them. M-Flasher
    reads it in download mode, a web page from m-bootloader's MIDI mode, a
    program on the device from the flash itself.
 5. Scopes 1 and 3: sector `0x4000` is stored, and its first 32 bytes decrypt
@@ -217,13 +218,13 @@ chip's ROM download mode, which on an FM-1 can need extra hardware.
 - The sectors are the build's `flash.bin` as it is, encrypted for chip key
   `0x980F`, plus whatever else the firmware keeps outside the app (resources,
   default data).
-- List every flash chip the firmware's own flash code works with, on any
+- If the firmware checks the flash part, list every part it accepts, on any
   board, not the part one board happens to carry: the flash is a die in the
   chip's package, and which maker's die a batch gets can change on either
   board. Seen so far: `0x856014` (Puya P25Q80H, FM-1s), `0xB36014` (UCUN
-  UC25HQ80, FM-1s from late 2026) and `0xEB6014` (SMK-37s), all 1 MiB with the
-  same commands. M-VAVE's stock firmware uses JieLi's driver, which has no list
-  of parts: list all three.
+  UC25HQ80, FM-1s from late 2026) and `0xEB6014` (SMK-37s), all 1 MiB. If it
+  doesn't check, as M-VAVE's stock firmware (JieLi's driver has no list of
+  parts), leave the field all 0.
 - Don't include the JieLi SDK's radio records (VM ids 106, 107, 108, 187).
   Firmware writes them on its first start.
 - An image of M-VAVE's stock firmware needs the stock sounds (USR: FM-1
@@ -253,4 +254,8 @@ using ordinary tools.
   units that ran other firmware have lost them already.
 - Whether the web route should get a MIDI mode command to write the boot area,
   or keep using m-bootloader's own installer package.
+- Whether firmwares should check the flash part at all. The parts seen take
+  the same commands, but whether new ones differ in ways that matter (status
+  register writes, erase times) is still being found out
+  (docs/findings.md).
 - The file extension: `.cfw`.

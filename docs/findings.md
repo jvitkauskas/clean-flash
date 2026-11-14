@@ -78,8 +78,20 @@ JieLi's die and a plain SPI NOR die from a flash maker; another maker's die
 doesn't change the part number, so the JEDEC ID tells the die, not the board,
 and any board may get any of these parts in a later batch.
 
-So an image says which parts its firmware accepts, and a writer checks the
-unit's before writing anything.
+Whether a firmware should check at all isn't settled. The differences known
+so far between the parts:
+
+- The UC25HQ80 has no `31h` (write status register 2), per UCUN's datasheet:
+  status register 2 is written only by a 16-bit `01h`. JieLi's driver uses
+  `31h` in one of its status write forms (lunar-modulator's reading of the
+  SDK, `notes/2026-11-10-flash-uc25hq80.md`).
+- Erase times: UCUN's datasheet gives 10 ms at most for a sector, against the
+  Puya's 20 ms, yet ChoralRoot lengthened its timeouts after reports that the
+  new part is slower (`docs/INSTALL-COMPAT.md`, 3y264).
+
+So an image of a firmware that checks lists the parts it accepts, and a writer
+refuses any other before writing anything. An image of a firmware that
+doesn't check lists none, so a new part doesn't need new images.
 
 ## The FM-1's flash holds nothing unit-specific
 
