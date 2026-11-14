@@ -216,7 +216,7 @@ chip's ROM download mode, which on an FM-1 can need extra hardware.
   default data).
 - List the flash chips the firmware's own flash code accepts. Today's FM-1s
   carry the Puya P25Q80H (`0x856014`) or, from late 2026, the UCUN UC25HQ80
-  (`0xB36014`); the SMK-37 seen carries `0xEB6014`. M-VAVE's stock firmware
+  (`0xB36014`); SMK-37s carry `0xEB6014`. M-VAVE's stock firmware
   uses JieLi's driver, which has no list of parts: list the parts it has run
   on.
 - Don't include the JieLi SDK's radio records (VM ids 106, 107, 108, 187).

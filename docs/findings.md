@@ -61,8 +61,13 @@ new ID to the list; none dropped the check or accepted any 1 MiB part:
 | 8–13 November | fmini-1, fm1-fimba, erik37 1.3 |
 | not yet (13 November) | Optimist, fm1-dub, zp12; the FM-1 builds of Makkuro37, Speak37, Vector37, sloop-pro |
 
+The SMK-37 carries another part, `0xEB6014`. Every SMK-37 firmware's list has
+it (ChoralRoot, Skiff, sloop-pro, genkigenki's, Dinghy, fmini-1,
+ChanceTheMaker's), most beside the Puya part, which no SMK-37 has been seen
+with.
+
 So an image says which parts its firmware accepts, and a writer checks the
-unit's before writing anything. The SMK-37s seen carry `0xEB6014`.
+unit's before writing anything.
 
 ## The FM-1's flash holds nothing unit-specific
 
