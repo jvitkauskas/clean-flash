@@ -18,6 +18,9 @@ The words MUST, MUST NOT, SHOULD and MAY are used as in RFC 2119.
 - **Sector:** 4 KiB of flash. Sector *n* is `n × 0x1000` to `n × 0x1000 + 0xFFF`.
 - **Boot area:** sectors 0 to 3 (`0x00000`–`0x03FFF`): the flash header, the
   boot file table, the bootloader and its configuration.
+- **Flash chip:** the 1 MiB SPI NOR flash, a die inside the JieLi chip's
+  package, from more than one maker. Its JEDEC ID (command `9F`) names the
+  die's maker and size, not the board.
 - **Chip key:** the 16-bit key the chip decrypts the app area (from `0x4000`)
   with. Firmware is stored encrypted with it. Every unit and every package seen
   so far uses `0x980F`.
@@ -214,11 +217,13 @@ chip's ROM download mode, which on an FM-1 can need extra hardware.
 - The sectors are the build's `flash.bin` as it is, encrypted for chip key
   `0x980F`, plus whatever else the firmware keeps outside the app (resources,
   default data).
-- List the flash chips the firmware's own flash code accepts. Today's FM-1s
-  carry the Puya P25Q80H (`0x856014`) or, from late 2026, the UCUN UC25HQ80
-  (`0xB36014`); SMK-37s carry `0xEB6014`. M-VAVE's stock firmware
-  uses JieLi's driver, which has no list of parts: list the parts it has run
-  on.
+- List every flash chip the firmware's own flash code works with, on any
+  board, not the part one board happens to carry: the flash is a die in the
+  chip's package, and which maker's die a batch gets can change on either
+  board. Seen so far: `0x856014` (Puya P25Q80H, FM-1s), `0xB36014` (UCUN
+  UC25HQ80, FM-1s from late 2026) and `0xEB6014` (SMK-37s), all 1 MiB with the
+  same commands. M-VAVE's stock firmware uses JieLi's driver, which has no list
+  of parts: list all three.
 - Don't include the JieLi SDK's radio records (VM ids 106, 107, 108, 187).
   Firmware writes them on its first start.
 - An image of M-VAVE's stock firmware needs the stock sounds (USR: FM-1

@@ -64,7 +64,19 @@ new ID to the list; none dropped the check or accepted any 1 MiB part:
 The SMK-37 carries another part, `0xEB6014`. Every SMK-37 firmware's list has
 it (ChoralRoot, Skiff, sloop-pro, genkigenki's, Dinghy, fmini-1,
 ChanceTheMaker's), most beside the Puya part, which no SMK-37 has been seen
-with.
+with. ChoralRoot, Skiff and fmini-1 accept all three parts on both boards.
+
+The flash is inside the chip's package. The FM-1's chip is marked
+`C1xxxxx-11B8`; in JieLi's markings the part after the dash holds the part
+number, with the in-package flash in megabits last
+([kagaimiq's notes](https://github.com/kagaimiq/jielie/blob/main/chips/chip-marks.md)):
+an AC7911B with 8 Mbit, 1 MiB, which JieLi's AC7911B datasheet lists with
+in-package flash. Photos of opened FM-1s show no flash chip on the board. The
+SMK-37's chip was identified by its community as an AC7911BA in QFN48
+(reported in lunar-modulator's `docs/01-hardware.md`). Such a package holds
+JieLi's die and a plain SPI NOR die from a flash maker; another maker's die
+doesn't change the part number, so the JEDEC ID tells the die, not the board,
+and any board may get any of these parts in a later batch.
 
 So an image says which parts its firmware accepts, and a writer checks the
 unit's before writing anything.
