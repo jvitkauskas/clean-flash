@@ -50,7 +50,10 @@ would run without its storage and could not be updated again"). Once
 installed, only the chip's ROM download mode replaces it.
 
 Reported from 2 November 2026 (ChoralRoot, SLOOP 2.8.5). Every fix added the
-new ID to the list; none dropped the check or accepted any 1 MiB part:
+new ID to the list; none dropped the check or accepted any 1 MiB part. Checked against the
+released `.fwsc` packages, not only the sources: the IDs appear in the
+decrypted code as 32-bit constants (`rN = 0x856014`), so a package shows which
+parts it accepts:
 
 | Accepts `0xB36014` since | Firmwares |
 |---|---|
@@ -59,7 +62,8 @@ new ID to the list; none dropped the check or accepted any 1 MiB part:
 | 4 November | Felucca, fm1-base |
 | 5 November | fm1-x0x, fm1-fomni, fm1-amb, LOOM-8 |
 | 8–13 November | fmini-1, fm1-fimba, erik37 1.3 |
-| not yet (13 November) | Optimist, fm1-dub, zp12; the FM-1 builds of Makkuro37, Speak37, Vector37, sloop-pro |
+| 0.3 releases | Optimist, through its fm1-base submodule (its own `project.c` and loader still list only the Puya part, and many builds on its `cloud-builds` branch accept only it) |
+| not yet (13 November) | fm1-dub, zp12; the FM-1 builds of Makkuro37, Speak37, Vector37, sloop-pro |
 
 The SMK-37 carries another part, `0xEB6014`. Every SMK-37 firmware's list has
 it (ChoralRoot, Skiff, sloop-pro, genkigenki's, Dinghy, fmini-1,
